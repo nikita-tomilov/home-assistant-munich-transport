@@ -1,22 +1,24 @@
 """Munich public transport (MVG) integration."""
 from __future__ import annotations
+
 import logging
 from datetime import datetime
 from typing import Optional
 
-from mvg import MvgApi
 import voluptuous as vol
-
+from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.sensor import PLATFORM_SCHEMA
+from mvg import MvgApi
+
 from .const import (
     DOMAIN,  # noqa
     SCAN_INTERVAL,  # noqa
     CONF_DEPARTURES,
     CONF_DEPARTURES_WALKING_TIME,
+    CONF_DEPARTURES_WHITELIST,
     CONF_TYPE_BUS,
     CONF_TYPE_SUBURBAN,
     CONF_TYPE_SUBWAY,
@@ -41,6 +43,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
             {
                 vol.Required(CONF_DEPARTURES_NAME): str,
                 vol.Optional(CONF_DEPARTURES_WALKING_TIME, default=1): int,
+                vol.Optional(CONF_DEPARTURES_WHITELIST, default=""): str,
                 **TRANSPORT_TYPES_SCHEMA,
             }
         ]
@@ -79,6 +82,8 @@ class TransportSensor(SensorEntity):
         self.config: dict = config
         self.station_name: str = config.get(CONF_DEPARTURES_NAME)
         self.walking_time: int = config.get(CONF_DEPARTURES_WALKING_TIME) or 1
+        self.whitelist: str = config.get(CONF_DEPARTURES_WHITELIST) or ""
+        self.whitelist_entries = []
         # we add +1 minute anyway to delete the "just gone" transport
 
     @property
@@ -112,6 +117,18 @@ class TransportSensor(SensorEntity):
     def update(self):
         self.departures = self.fetch_departures()
 
+    def is_whitelisted(self, entry):
+        if self.whitelist == "":
+            return True
+        if len(self.whitelist_entries) == 0:
+            self.whitelist_entries = self.whitelist.split(",")
+            self.whitelist_entries = list(map(lambda x: x.lower(), self.whitelist_entries))
+        destination = entry["destination"].lower()
+        for whitelist_entry in self.whitelist_entries:
+            if whitelist_entry in destination:
+                return True
+        return False
+
     def fetch_departures(self) -> Optional[list[Departure]]:
         station = MvgApi.station(self.station_name)
 
@@ -123,11 +140,11 @@ class TransportSensor(SensorEntity):
         _LOGGER.debug(f"OK: station ID for {self.station_name}: {stop_id}")
 
         mvgapi = MvgApi(stop_id)
-        departures = mvgapi.departures(limit=20)
+        departures = mvgapi.departures(limit=100)
         departures = list(map(lambda x: add_departure_time_minutes(x), departures))
         departures = list(
-            filter(lambda d: self.walking_time < int(d['departureTimeMinutes']) and not bool(d['cancelled']),
-                   departures))
+            filter(lambda d: self.walking_time < int(d['departureTimeMinutes']) and not bool(
+                d['cancelled']) and self.is_whitelisted(d), departures))
 
         _LOGGER.debug(f"OK: departures for {stop_id}: {departures}")
 

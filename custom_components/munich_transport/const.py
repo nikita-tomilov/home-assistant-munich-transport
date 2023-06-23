@@ -8,6 +8,7 @@ DEFAULT_ICON = "mdi:clock"
 CONF_DEPARTURES = "departures"
 CONF_DEPARTURES_NAME = "name"
 CONF_DEPARTURES_WALKING_TIME = "walking_time"
+CONF_DEPARTURES_WHITELIST = "whitelist"
 CONF_TYPE_SUBURBAN = "S-Bahn"
 CONF_TYPE_SUBWAY = "U-Bahn"
 CONF_TYPE_TRAM = "Tram"
@@ -62,7 +63,7 @@ TRANSPORT_TYPE_VISUALS = {
     "S8": {
         "code": "S",
         "icon": "mdi:subway-variant",
-        "color": "#000000",
+        "color": "#ff6600",
     },
     "S20": {
         "code": "S",
