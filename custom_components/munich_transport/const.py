@@ -8,17 +8,12 @@ DEFAULT_ICON = "mdi:clock"
 CONF_DEPARTURES = "departures"
 CONF_DEPARTURES_NAME = "name"
 CONF_DEPARTURES_WALKING_TIME = "walking_time"
-CONF_TYPE_SUBURBAN = "SBAHN"
-CONF_TYPE_SUBWAY = "UBAHN"
-CONF_TYPE_TRAM = "TRAM"
-CONF_TYPE_BUS = "BUS"
+CONF_TYPE_SUBURBAN = "S-Bahn"
+CONF_TYPE_SUBWAY = "U-Bahn"
+CONF_TYPE_TRAM = "Tram"
+CONF_TYPE_BUS = "Bus"
 
 TRANSPORT_TYPE_VISUALS = {
-    CONF_TYPE_SUBURBAN: {
-        "code": "S",
-        "icon": "mdi:subway-variant",
-        "color": "#4C9046",
-    },
     CONF_TYPE_SUBWAY: {
         "code": "U",
         "icon": "mdi:subway",
@@ -33,5 +28,45 @@ TRANSPORT_TYPE_VISUALS = {
         "code": "BUS",
         "icon": "mdi:bus",
         "color": "#133B4B"
-    }
+    },
+    "S1": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#16bae7",
+    },
+    "S2": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#76b82a",
+    },
+    "S3": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#951b81",
+    },
+    "S4": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#e30613",
+    },
+    "S6": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#00975f",
+    },
+    "S7": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#943126",
+    },
+    "S8": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#000000",
+    },
+    "S20": {
+        "code": "S",
+        "icon": "mdi:subway-variant",
+        "color": "#ea516d",
+    },
 }

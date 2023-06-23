@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from .const import DEFAULT_ICON, TRANSPORT_TYPE_VISUALS
+from .const import DEFAULT_ICON, TRANSPORT_TYPE_VISUALS, CONF_TYPE_SUBURBAN
 
 
 @dataclass
@@ -20,17 +20,21 @@ class Departure:
 
     @classmethod
     def from_dict(cls, source):
-        line_visuals = TRANSPORT_TYPE_VISUALS.get(source['product']) or {}
-        timestamp = datetime.fromtimestamp(source['departureTime'] / 1000)
+        if source['type'] == CONF_TYPE_SUBURBAN:
+            key = 'line'
+        else:
+            key = 'type'
+        line_visuals = TRANSPORT_TYPE_VISUALS.get(source[key]) or {}
+        timestamp = source['departureTime']
         return cls(
-            trip_id=source["departureId"],
-            line_name=source['label'],
-            line_type=source['product'],
+            trip_id=source["destination"],
+            line_name=source['line'],
+            line_type=source['type'],
             timestamp=timestamp,
             time="%s min" % source['departureTimeMinutes'],
             direction=source['destination'],
             icon=line_visuals.get("icon") or DEFAULT_ICON,
-            bg_color=source['lineBackgroundColor'],
+            bg_color=line_visuals.get("color") or "green",
             location=(0.0, 0.0),
         )
 

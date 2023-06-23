@@ -1,9 +1,10 @@
 """Munich public transport (MVG) integration."""
 from __future__ import annotations
 import logging
+from datetime import datetime
 from typing import Optional
 
-import mvg_api
+from mvg import MvgApi
 import voluptuous as vol
 
 from homeassistant.core import HomeAssistant
@@ -59,6 +60,17 @@ async def async_setup_platform(
             add_entities([TransportSensor(hass, departure)])
 
 
+def add_departure_time_minutes(entry):
+    timestamp1 = datetime.fromtimestamp(entry['time'])
+    timestamp2 = datetime.fromtimestamp(entry['planned'])
+    timestamp = min(timestamp1, timestamp2)
+    time_until_departure = timestamp - datetime.now()
+    time_until_departure_minutes = int(time_until_departure.total_seconds() / 60)
+    entry['departureTime'] = timestamp
+    entry['departureTimeMinutes'] = time_until_departure_minutes
+    return entry
+
+
 class TransportSensor(SensorEntity):
     departures: list[Departure] = []
 
@@ -101,14 +113,18 @@ class TransportSensor(SensorEntity):
         self.departures = self.fetch_departures()
 
     def fetch_departures(self) -> Optional[list[Departure]]:
-        stop_id = mvg_api.get_id_for_station(self.station_name)
+        station = MvgApi.station(self.station_name)
 
-        if stop_id is None:
+        if station is None:
             _LOGGER.warning("Could not find %s" % self.station_name)
+            return []
 
+        stop_id = station['id']
         _LOGGER.debug(f"OK: station ID for {self.station_name}: {stop_id}")
 
-        departures = mvg_api.get_departures(stop_id)
+        mvgapi = MvgApi(stop_id)
+        departures = mvgapi.departures(limit=20)
+        departures = list(map(lambda x: add_departure_time_minutes(x), departures))
         departures = list(
             filter(lambda d: self.walking_time < int(d['departureTimeMinutes']) and not bool(d['cancelled']),
                    departures))
