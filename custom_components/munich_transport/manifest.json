@@ -3,7 +3,7 @@
   "name": "Munich public transport (MVG)",
   "config_flow": true,
   "documentation": "https://github.com/MrGauz/home-assistant-munich-transport",
-  "requirements": ["mvg-api==1.2.7"],
+  "requirements": ["mvg==1.0.2"],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
